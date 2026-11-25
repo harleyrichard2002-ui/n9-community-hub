@@ -9,3 +9,6 @@ Run v8-migration.sql in Supabase SQL Editor before deploying the updated files. 
 
 ## V9
 Frontend-only update from V8. No new SQL required if V8 migration is installed. Auto drop runs one ball at a time and stops on navigation or insufficient funds.
+
+## V10
+Presentation update only; retain the V8 database migration. Roulette animation follows the returned pocket; blackjack totals use visible cards only during active hands. Vault reveal, slot motion and lobby cards are CSS-based.
