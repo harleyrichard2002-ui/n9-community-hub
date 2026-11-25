@@ -6,3 +6,6 @@ Existing V6 installations: run only admin-money-migration.sql, then replace webs
 
 ## V8 upgrade from V7
 Run v8-migration.sql in Supabase SQL Editor before deploying the updated files. Existing balances remain intact. Five new native games and a casino lobby are included. No fixed wager cap; database bigint and browser number precision impose technical limits. Crash uses server time; Plinko displays a generated path, not a physics simulation. Recent history is shown in the lobby. Optional play limits and lifetime statistics are not implemented. Test on a staging Supabase project before production.
+
+## V9
+Frontend-only update from V8. No new SQL required if V8 migration is installed. Auto drop runs one ball at a time and stops on navigation or insufficient funds.
