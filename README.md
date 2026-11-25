@@ -8,3 +8,6 @@ Run casino-migration.sql once in Supabase SQL Editor. Do not rerun the original 
 
 ## V4 Le Rascal
 Run rascal-migration.sql after the V3 casino migration. Upload all files including public/le-rascal.html. Uses shared District Slots wallet and existing admin reset. This initial integration supports server-side weighted ordinary symbols and cascading wins (up to 30 grids). Bonus buys, free spins, wilds, bombs, jackpots, autoplay and local top-ups are disabled; original bonus animation code is not used. No real money. Live database testing required.
+
+## Le Rascal 404 fix
+Upload all files including assets/le-rascal.html and vite.config.js. Vite now imports the game as a build asset rather than relying on a hard-coded public URL. Netlify build: npm run build; publish: dist. No new SQL required if V4 migrations were already applied.
