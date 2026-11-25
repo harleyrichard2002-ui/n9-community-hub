@@ -1,0 +1,24 @@
+-- Run in Supabase SQL editor. Separate tables from the original Command Center.
+create table if not exists public.hub_members(id uuid primary key references auth.users(id), name text not null, rank text not null default 'District Member', points integer not null default 0, warnings integer not null default 0, last_active timestamptz);
+create table if not exists public.hub_admins(id uuid primary key references auth.users(id));
+create table if not exists public.hub_posts(id uuid primary key default gen_random_uuid(), author uuid not null default auth.uid() references auth.users(id), kind text not null check(kind in ('raid','chat','media','advice','support','issue','giveaway','announcement')), title text not null default '', body text not null, link text, status text not null default 'pending', created_at timestamptz not null default now());
+create table if not exists public.hub_entries(post_id uuid references public.hub_posts(id) on delete cascade, member_id uuid references auth.users(id) default auth.uid(), primary key(post_id,member_id));
+create table if not exists public.hub_checkins(member_id uuid references auth.users(id) default auth.uid(), day date default (now() at time zone 'UTC')::date, primary key(member_id,day));
+create table if not exists public.hub_replies(id uuid primary key default gen_random_uuid(), post_id uuid references public.hub_posts(id) on delete cascade, author uuid references auth.users(id) default auth.uid(), body text not null, created_at timestamptz default now());
+create or replace function public.hub_is_admin() returns boolean language sql stable security definer set search_path=public as $$ select exists(select 1 from hub_admins where id=auth.uid()) $$;
+create or replace function public.hub_is_member() returns boolean language sql stable security definer set search_path=public as $$ select exists(select 1 from hub_members where id=auth.uid()) or hub_is_admin() $$;
+create or replace function public.hub_checkin() returns void language plpgsql security definer set search_path=public as $$ begin if not hub_is_member() then raise exception 'Not a member'; end if; insert into hub_checkins(member_id) values(auth.uid()) on conflict do nothing; update hub_members set last_active=now() where id=auth.uid(); end $$;
+create or replace function public.hub_visible(p public.hub_posts) returns boolean language sql stable security definer set search_path=public as $$ select hub_is_member() and (hub_is_admin() or p.author=auth.uid() or (p.kind not in ('support','issue') and (p.kind <> 'media' or p.status='approved'))) $$;
+alter table hub_members enable row level security; alter table hub_admins enable row level security; alter table hub_posts enable row level security; alter table hub_entries enable row level security; alter table hub_checkins enable row level security; alter table hub_replies enable row level security;
+create policy member_read on hub_members for select to authenticated using(hub_is_member());
+create policy member_admin on hub_members for all to authenticated using(hub_is_admin()) with check(hub_is_admin());
+create policy admin_self on hub_admins for select to authenticated using(id=auth.uid());
+create policy post_read on hub_posts for select to authenticated using(hub_visible(hub_posts));
+create policy post_create on hub_posts for insert to authenticated with check(hub_is_member() and author=auth.uid() and status='pending' and (kind not in ('giveaway','announcement') or hub_is_admin()));
+create policy post_admin on hub_posts for update to authenticated using(hub_is_admin()) with check(hub_is_admin());
+create policy post_delete on hub_posts for delete to authenticated using(hub_is_admin());
+create policy entry_read on hub_entries for select to authenticated using(hub_is_admin() or member_id=auth.uid());
+create policy entry_create on hub_entries for insert to authenticated with check(hub_is_member() and member_id=auth.uid() and exists(select 1 from hub_posts p where p.id=post_id and p.kind='giveaway' and p.status='pending'));
+create policy checkin_read on hub_checkins for select to authenticated using(hub_is_member());
+create policy reply_read on hub_replies for select to authenticated using(exists(select 1 from hub_posts p where p.id=post_id and hub_visible(p)));
+create policy reply_create on hub_replies for insert to authenticated with check(author=auth.uid() and exists(select 1 from hub_posts p where p.id=post_id and hub_visible(p)));
