@@ -12,3 +12,6 @@ Frontend-only update from V8. No new SQL required if V8 migration is installed. 
 
 ## V10
 Presentation update only; retain the V8 database migration. Roulette animation follows the returned pocket; blackjack totals use visible cards only during active hands. Vault reveal, slot motion and lobby cards are CSS-based.
+
+## V11 community update
+Run community-migration.sql in Supabase after previous migrations. Upload all files and redeploy. Raid uploads use a private member-only storage bucket, 10 MB maximum. Media thumbnails support YouTube and direct image/video links; other providers show a fallback link. Support uses existing private posts/replies and polling, not realtime sockets. Older duplicate open support requests are closed by migration, preserving their messages.

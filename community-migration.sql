@@ -1,0 +1,12 @@
+alter table public.hub_posts add column if not exists image_path text;
+insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values ('hub-raid','hub-raid',false,10485760,array['image/jpeg','image/png','image/webp','image/gif']) on conflict(id) do update set public=false,file_size_limit=10485760,allowed_mime_types=excluded.allowed_mime_types;
+drop policy if exists hub_raid_read on storage.objects;
+create policy hub_raid_read on storage.objects for select to authenticated using(bucket_id='hub-raid' and public.hub_is_member());
+drop policy if exists hub_raid_upload on storage.objects;
+create policy hub_raid_upload on storage.objects for insert to authenticated with check(bucket_id='hub-raid' and public.hub_is_member() and (storage.foldername(name))[1]=auth.uid()::text);
+drop policy if exists hub_raid_remove on storage.objects;
+create policy hub_raid_remove on storage.objects for delete to authenticated using(bucket_id='hub-raid' and ((storage.foldername(name))[1]=auth.uid()::text or public.hub_is_admin()));
+with ranked as (select id,row_number() over(partition by author order by created_at desc,id) rn from public.hub_posts where kind='support' and status in ('pending','accepted')) update public.hub_posts set status='closed' where id in (select id from ranked where rn>1);
+create unique index if not exists hub_one_support on public.hub_posts(author) where kind='support' and status in ('pending','accepted');
+drop policy if exists reply_create on public.hub_replies;
+create policy reply_create on public.hub_replies for insert to authenticated with check(author=auth.uid() and exists(select 1 from public.hub_posts p where p.id=post_id and public.hub_visible(p) and (p.kind<>'support' or p.status in ('pending','accepted'))));
