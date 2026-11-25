@@ -11,3 +11,5 @@ Run rascal-migration.sql after the V3 casino migration. Upload all files includi
 
 ## Le Rascal 404 fix
 Upload all files including assets/le-rascal.html and vite.config.js. Vite now imports the game as a build asset rather than relying on a hard-coded public URL. Netlify build: npm run build; publish: dist. No new SQL required if V4 migrations were already applied.
+
+V5: Native Le Rascal component, no iframe. Existing V4 SQL required; no new migration. Original artwork retained; simplified interface, no sound or bonus features.
