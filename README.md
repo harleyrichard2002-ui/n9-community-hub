@@ -5,3 +5,6 @@ V2 upgrade: replace src.js in your existing GitHub repository and redeploy. No s
 
 ## V3 upgrade (existing site)
 Run casino-migration.sql once in Supabase SQL Editor. Do not rerun the original schema. Upload the complete V3 project to your existing GitHub repository, including netlify/functions/create-member.mjs. In Netlify keep existing VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (legacy service_role key, server-side Functions scope only). Never prefix the secret with VITE_. Redeploy from GitHub. Test as an admin and regular member. Admin-created accounts are email-confirmed and approved; share temporary passwords privately. Existing self-registration remains available. Virtual balances initialize on first casino visit. No real money or redemption. The migration is intended to run once. Live integration has not been tested.
+
+## V4 Le Rascal
+Run rascal-migration.sql after the V3 casino migration. Upload all files including public/le-rascal.html. Uses shared District Slots wallet and existing admin reset. This initial integration supports server-side weighted ordinary symbols and cascading wins (up to 30 grids). Bonus buys, free spins, wilds, bombs, jackpots, autoplay and local top-ups are disabled; original bonus animation code is not used. No real money. Live database testing required.
